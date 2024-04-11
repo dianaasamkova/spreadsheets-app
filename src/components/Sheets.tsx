@@ -1,9 +1,34 @@
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useSheets} from '../providers/sheets';
-import {ISheets} from "../definitions";
+import {ISheets, ThemeSettings} from "../definitions";
+import {useTheme} from "../providers/theme";
 
 const SheetsDisplay = () => {
     const {sheets, selectedSheets} = useSheets();
+    const {themeSettings} = useTheme();
+
+
+    const applyStyles = useCallback((rowIndex: number, cellIndex: number) => {
+        const isRowEven = rowIndex % 2 === 0;
+        const isCellEven = cellIndex % 2 === 0;
+
+        let rowStyle: Partial<ThemeSettings> = isRowEven ? themeSettings.evenRows : themeSettings.oddRows;
+        let cellStyle: Partial<ThemeSettings> = isCellEven ? themeSettings.evenCellValues : themeSettings.oddCellValues;
+
+        if (!rowStyle.color) {
+            const {color, ...rest} = rowStyle
+            rowStyle = {...rest}
+        }
+        if (!rowStyle.backgroundColor) {
+            const {backgroundColor, ...rest} = rowStyle
+            rowStyle = {...rest}
+        }
+        return {
+            ...cellStyle,
+            ...rowStyle,
+        };
+    }, [themeSettings]);
+
 
     const filteredSheets = useMemo(() => {
         const filteredData: ISheets = {};
@@ -30,7 +55,11 @@ const SheetsDisplay = () => {
                             <div key={rowIndex} className="row"
                                  style={{gridTemplateColumns: `repeat(${maxCells}, minmax(50px, 1fr))`}}>
                                 {row.map((cell, cellIndex) => (
-                                    <div key={cellIndex} className="cell">{cell}</div>
+                                    <div
+                                        key={cellIndex}
+                                        style={applyStyles(rowIndex, cellIndex)}
+                                        className="cell"
+                                    >{cell}</div>
                                 ))}
                             </div>
                         ))}
