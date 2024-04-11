@@ -45,15 +45,27 @@ const SheetsDisplay = () => {
         }, 0);
     }, [sheets]);
 
+    const calculateSum = useCallback((row: number[]) => {
+        return row.reduce((sum, value) => sum + value, 0);
+    }, []);
 
+
+    const headers = ['A', 'B', 'C', 'D', 'E']
     return (
         <div className="column">
             {Object.entries(filteredSheets).length ?
                 Object.entries(filteredSheets).map(([sheetName, table]) => (
                     <div className="table" key={sheetName}>
+                        <div className="row"
+                             style={{gridTemplateColumns: `repeat(${maxCells + 1}, minmax(50px, 1fr))`}}>
+                            {headers.slice(0, table[0].length).map((header, index) => (
+                                <div key={header} className="cell">{header}</div>
+                            ))}
+                            <div className="cell">SUM</div>
+                        </div>
                         {table.map((row, rowIndex) => (
                             <div key={rowIndex} className="row"
-                                 style={{gridTemplateColumns: `repeat(${maxCells}, minmax(50px, 1fr))`}}>
+                                 style={{gridTemplateColumns: `repeat(${maxCells + 1}, minmax(50px, 1fr))`}}>
                                 {row.map((cell, cellIndex) => (
                                     <div
                                         key={cellIndex}
@@ -61,6 +73,7 @@ const SheetsDisplay = () => {
                                         className="cell"
                                     >{cell}</div>
                                 ))}
+                                <div className="cell sum">{calculateSum(row)}</div>
                             </div>
                         ))}
                     </div>

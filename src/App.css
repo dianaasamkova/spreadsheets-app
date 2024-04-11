@@ -43,3 +43,7 @@ body {
   border: 1px solid #ccc;
   padding: 10px;
 }
+
+.cell.sum {
+  background-color: aliceblue;
+}
