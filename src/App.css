@@ -29,14 +29,13 @@ body {
 }
 
 .table {
-  display: grid;
-  gap: 5px;
   margin-bottom: 20px;
 }
 
 .row {
   display: grid;
   gap: 5px;
+  margin-bottom: 5px;
 }
 
 .cell {
