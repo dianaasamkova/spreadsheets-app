@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import styles from './styles/Modal.module.css';
 import {Settings, ThemeSettings} from "../definitions";
 import {useTheme} from "../providers/theme";
@@ -18,16 +18,24 @@ const Modal: React.FC<ModalProps> = ({onClose}) => {
     const [themeInputs, setThemeInputs] = useState<Settings>(defaultSettings);
     const [isInputInitialized, setIsInputInitialized] = useState<boolean>(false)
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const debounceApplyingTheme = useCallback(debounce((category: keyof Settings, property: keyof ThemeSettings, value: string) => {
-        setThemeSettings(prevSettings => ({
-            ...prevSettings,
-            [category]: {
-                ...prevSettings[category],
-                [property]: value
-            }
-        }))
-    }, 1000), []);
+    // One debounce timer per field: a single shared timer dropped an edit when another field changed within the delay.
+    // Pending timers still fire after the modal closes, so the last edits are applied.
+    const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+
+    const debounceApplyingTheme = (category: keyof Settings, property: keyof ThemeSettings, value: string) => {
+        const key = `${category}.${property}`;
+        clearTimeout(timers.current.get(key));
+        timers.current.set(key, setTimeout(() => {
+            timers.current.delete(key);
+            setThemeSettings(prevSettings => ({
+                ...prevSettings,
+                [category]: {
+                    ...prevSettings[category],
+                    [property]: value
+                }
+            }));
+        }, 1000));
+    };
 
     const handleChange = (category: keyof Settings, property: keyof ThemeSettings, value: string) => {
         setThemeInputs(prevSettings => ({
@@ -79,19 +87,3 @@ const Modal: React.FC<ModalProps> = ({onClose}) => {
 };
 
 export default Modal;
-
-function debounce<T extends (...args: any[]) => any>(
-    func: T,
-    delay: number
-): (...args: Parameters<T>) => void {
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
-        const context = this;
-
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-            func.apply(context, args);
-        }, delay);
-    };
-}
