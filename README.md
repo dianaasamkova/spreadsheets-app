@@ -1,46 +1,53 @@
-# Getting Started with Create React App
+# Spreadsheet Viewer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[![CI](https://github.com/dianaasamkova/spreadsheets-app/actions/workflows/ci.yml/badge.svg)](https://github.com/dianaasamkova/spreadsheets-app/actions/workflows/ci.yml)
 
-## Available Scripts
+A multi-sheet table viewer in React: pick any sheets, see a total for every row, and restyle the table live from a theme editor.
 
-In the project directory, you can run:
+<img src="docs/screenshot.png" alt="Sheet 1 and Sheet 2 selected; rows have totals in the last column, even rows have a light-blue background and odd values are red" width="900">
 
-### `yarn start`
+> **Context:** a 2024 take-home assignment. I revisited it in 2026, fixed a theme-editor bug, replaced the failing boilerplate test with real ones, added CI and documented the design. See [TECH.md](TECH.md).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Highlights
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- **Several sheets at once.** Toggle any sheets from the sidebar; each one renders as its own table, in the same column grid.
+- **Row totals,** computed once per data change (`useMemo`), not on every render.
+- **Rule-based theming.** Four rules, *even rows*, *odd rows*, *even values* and *odd values*, each with text and background colour, accepting any CSS colour. Row rules win over value rules, and an empty field falls through to the next rule.
+- **Live preview without jank.** Edits are debounced per field, so typing a colour doesn't restyle the table on every keystroke, and quick edits to different fields are never lost.
+- **Context-based state.** Separate `SheetsProvider` and `ThemeProvider`, so theme changes don't touch data logic.
+- **Behaviour tests** with Testing Library: sheet selection, row totals and the theme editor, with the network mocked.
 
-### `yarn test`
+## Tech stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+React 18 · TypeScript · Context API · CSS Modules · Jest + Testing Library · Create React App
 
-### `yarn build`
+## Quick start
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Requires Node 18+ and Yarn 1.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+yarn install
+yarn start        # http://localhost:3000
+yarn test         # tests
+yarn build        # production build
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The data is a public JSON file that was provided with the assignment. It's fetched at startup, so no setup is needed.
 
-### `yarn eject`
+## Project structure
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```
+src/
+├── providers/
+│   ├── sheets.tsx      # Fetches sheets; holds the selected sheets
+│   └── theme.tsx       # Theme rules
+├── components/
+│   ├── NavigatioBar.tsx  # Sheet list + "Change Theme" toggle
+│   ├── Sheets.tsx        # Tables, row totals, style resolution
+│   └── Modal.tsx         # Theme editor with per-field debounce
+└── definitions/        # Shared types
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Docs
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- [TECH.md](TECH.md): architecture, decisions and trade-offs, a 2026 retrospective, and a roadmap.
